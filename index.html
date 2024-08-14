@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Number guessing game</title>
+    <style>
+      html {
+        font-family: 'Arial', sans-serif;
+        background: url('images/image1.jpeg') no-repeat center center fixed;
+        background-size: cover;
+        color: #333;
+      }
+
+      body {
+        width: 50%;
+        max-width: 800px;
+        min-width: 480px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        border-radius: 10px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+      }
+      
+      h1 {
+        color: #ff6347;
+        text-align: center;
+        font-size: 2.5em;
+      }
+
+      p {
+        font-size: 1.2em;
+      }
+
+      .form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .form label {
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      .form input[type="number"] {
+        width: 200px;
+        padding: 10px;
+        font-size: 1em;
+        border: 2px solid #ff6347;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      .form input[type="submit"] {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: white;
+        background: linear-gradient(to right, #daff47, #ff4500);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .form input[type="submit"]:hover {
+        background: linear-gradient(to right, #ff4500, #6647ff);
+      }
+
+      .lastResult {
+        color: white;
+        padding: 5px;
+        font-size: 1.5em;
+        text-align: center;
+        margin: 10px 0;
+      }
+
+      .resultParas p {
+        font-size: 1.2em;
+      }
+
+      .lowOrHi {
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        font-size: 1em;
+        color: white;
+        background: linear-gradient(to right, #4682b4, #5a9bd4);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      button:hover {
+        background: linear-gradient(to right, #5a9bd4, #4682b4);
+      }
+
+      .jokeSubmit {
+  padding: 10px 20px;
+  font-size: 1em;
+  color: white;
+  background: linear-gradient(to right, #ff4791, #00ff3c); /* グラデーションの設定 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 影を追加 */
+}
+.form input[type="text"] {
+        width: 200px;
+        padding: 10px;
+        font-size: 1em;
+        border: 2px solid #8447ff;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+
+.jokeSubmit:hover {
+  background: linear-gradient(to right, #aaff00, #47b2ff); /* ホバー時のグラデーション変更 */
+}
+
+.jokeSubmit:active {
+  transform: translateY(1px); /* クリック時の少しの移動 */
+}
+
+    </style>
+  </head>
+
+  <body>
+    <h1>数当てゲー～ーーーーーーーーム</h1>
+
+    <p>1～100までのランダムな数を当ててみよう</p>
+    <p>チャンスは5回までだぜ！！</p>
+    <p>間違えたら面白いジョークを言うまで次の数字を入力できない！！</p>
+
+    <div class="form">
+      <label for="guessField">予想: </label>
+      <input type="number" min="1" max="100" required id="guessField" class="guessField">
+      <input type="submit" value="Submit guess" class="guessSubmit">
+    </div>
+
+    <div class="form" id="jokeForm" style="display:none;">
+      <label for="jokeField">面白いジョークを入力(おもろいこと言うまで終わらんで): </label>
+      <input type="text" id="jokeField" class="jokeField">
+      <input type="button" value="Submit joke" class="jokeSubmit">
+    </div>
+
+    <div class="resultParas">
+      <p class="guesses"></p>
+      <p class="lastResult"></p>
+      <p class="lowOrHi"></p>
+    </div>
+
+    <script>
+      let randomNumber = Math.floor(Math.random() * 100) + 1;
+
+const guesses = document.querySelector('.guesses');
+const lastResult = document.querySelector('.lastResult');
+const lowOrHi = document.querySelector('.lowOrHi');
+
+const guessSubmit = document.querySelector('.guessSubmit');
+const guessField = document.querySelector('.guessField');
+
+const jokeForm = document.getElementById('jokeForm');
+const jokeField = document.querySelector('.jokeField');
+const jokeSubmit = document.querySelector('.jokeSubmit');
+
+let guessCount = 1;
+let resetButton;
+
+// 面白いジョークを保存する配列
+let funnyJokes = [];
+
+const donegame = "こちらが面白いジョーク一覧です。";
+
+guessField.focus();
+
+function checkGuess() {
+  const userGuess = Number(guessField.value);
+  if (guessCount === 1) {
+    guesses.textContent = '前回までの予想: ';
+  }
+  guesses.textContent += `${userGuess} `;
+
+  if (userGuess === randomNumber) {
+    lastResult.textContent = '当たり！おめでとう';
+    lastResult.style.backgroundColor = 'green';
+    lowOrHi.textContent = '';
+    setGameOver();
+  } else if (guessCount === 5) {
+    lastResult.textContent = 'ゲーーーーーーーーーームオーバ～';
+    lowOrHi.textContent = '';
+    setGameOver();
+  } else {
+    lastResult.textContent = '違う！';
+    lastResult.style.backgroundColor = 'red';
+    if (userGuess < randomNumber) {
+      lowOrHi.textContent = '低すぎやで！！！！';
+    } else if (userGuess > randomNumber) {
+      lowOrHi.textContent = '高すぎやわ';
+    }
+    guessField.disabled = true;
+    guessSubmit.disabled = true;
+    jokeForm.style.display = 'flex';
+  }
+
+  guessCount++;
+  guessField.focus();
+}
+
+guessSubmit.addEventListener('click', checkGuess);
+
+jokeSubmit.addEventListener('click', () => {
+  const jokeChance = Math.random(); // 0から1のランダムな数値を生成
+  if (jokeChance < 0.4) { 
+    if (jokeField.value.trim() !== '') {
+      // 面白いジョークを配列に追加
+      funnyJokes.push(jokeField.value.trim());
+      guessField.disabled = false;
+      guessSubmit.disabled = false;
+      jokeForm.style.display = 'none';
+      jokeField.value = '';
+      guessField.focus();
+    } else {
+      alert('面白いジョークを入力してください！\nおもろいこと言うまで終わらんで');
+    }
+  } else {
+    alert('おもんなぁ\nもっとおもろいこと言ってね！');
+  }
+});
+
+function setGameOver() {
+  guessField.disabled = true;
+  guessSubmit.disabled = true;
+  jokeField.disabled = true;
+  jokeSubmit.disabled = true;
+  resetButton = document.createElement('button');
+  resetButton.textContent = 'スタート新規ゲーム';
+  document.body.append(resetButton);
+  resetButton.addEventListener('click', resetGame);
+
+  // ゲーム終了時にジョークのリストを表示する
+  displayFunnyJokes();
+}
+
+function resetGame() {
+  guessCount = 1;
+  const resetParas = document.querySelectorAll('.resultParas p');
+  for (const resetPara of resetParas) {
+    resetPara.textContent = '';
+  }
+  resetButton.parentNode.removeChild(resetButton);
+  guessField.disabled = false;
+  guessSubmit.disabled = false;
+  jokeField.disabled = false;
+  jokeSubmit.disabled = false;
+  guessField.value = '';
+  guessField.focus();
+  lastResult.style.backgroundColor = 'white';
+  randomNumber = Math.floor(Math.random() * 100) + 1;
+}
+
+function displayFunnyJokes() {
+  const resultParas = document.querySelector('.resultParas');
+  const jokesList = document.createElement('ul');
+
+  funnyJokes.forEach(joke => {
+    const jokeItem = document.createElement('li');
+    jokeItem.textContent = joke;
+    jokesList.appendChild(jokeItem);
+  });
+
+  resultParas.appendChild(jokesList);
+}
+
+    </script>
+  </body>
+</html>
